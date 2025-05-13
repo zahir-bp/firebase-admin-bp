@@ -1,9 +1,7 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { sendMessageToken } from "./firebase-admin/firebase-admin-config";
-
-require("dotenv").config();
+import { sendMessageTopic } from "./firebase-admin/firebase-admin-config";
 
 const app = express();
 
@@ -20,27 +18,64 @@ app.get("/", (_req: Request, res: Response) => {
   return res.send("Express Typescript on Vercel");
 });
 
-app.get("/send-fcm", async (_req: Request, res: Response) => {
-  // iphone 16 sim
-  // const dummyToken =
-  //   "fxdc_q32pk-bg3-CHZDvGN:APA91bFurWOvpKxH5ibKHND43ltZHwLEqAiahid7Ww7U-PNfszOS5Nk4K8NgfAkMIcRJY-l7T1arFId1Z3EyZjqSl0exGa8rMbN6ytvtqnt1INcfJLWNRBA";
+// app.get("/send", async (_req: Request, res: Response) => {
+//   try {
+//     // iphone 16 sim
+//     // const dummyToken =
+//     //   "fxdc_q32pk-bg3-CHZDvGN:APA91bFurWOvpKxH5ibKHND43ltZHwLEqAiahid7Ww7U-PNfszOS5Nk4K8NgfAkMIcRJY-l7T1arFId1Z3EyZjqSl0exGa8rMbN6ytvtqnt1INcfJLWNRBA";
 
-  // samsung a23
-  const dummyToken =
-    "eDPtfHrRTrO9J9UYP0VQPX:APA91bFKzmRgf6Y-SVV77s95eLTcMcaRxcRWGTEzLhcoSJ7mxGS6vVrVAtBBL68_1TWLa7SoUp2_W-afjJHfDITH3MYcf1P_fAwOk1r6pR1qCYJrvSjsXzk";
-  const dummyTitle = "transaction approved";
-  const dummyBody =
-    "your card transaction ending 9018 has been charged RM 280. Please contact customer support if its not you.";
+//     // samsung a23
+//     // const dummyToken =
+//     //   "d3U-s7wUT7SYJmxwYi7gar:APA91bHvYXviC4j5mTqMe5m7Y8Go81E2IwsiI2pgHtcT56OgXDA97ndajAUWfMeunHnM2X3t9E9qwwGg0hAqTcz-APzSC1YHpJdeKIONzpvnaF6qbm2EhYw";
+//     const dummyToken =
+//       "f45CiPY7TTSBndOFSDvVfU:APA91bEt 3tIWFAja2VFG-Pr5XVwRLMJjdt1lrD_BnvViySNmdlcKXsotFJ9M8tpNp6f2Vt0xy8 wHFuCuGA7D4GeAwT2loi4-qhReQXeU2ZS3ilVRe9il4jE";
+//     const notificationTitle = "transaction approved";
+//     const notificationBody =
+//       "your card transaction ending 8171 has been charged RM 9000. Please contact customer support if its not you.";
 
-  const response = sendMessageToken(dummyToken, dummyTitle, dummyBody);
-  if (response) {
-    return res.send("Message send successfully");
+//     const response = sendMessageToken(
+//       dummyToken,
+//       notificationTitle,
+//       notificationBody
+//     );
+//     if (response) {
+//       return res.send("Message send successfully");
+//     }
+//   } catch (error) {
+//     console.log(">>> error", error);
+//   }
+
+//   return res.send("Message failed to send");
+// });
+
+app.post("/send-topic", async (_req: Request, res: Response) => {
+  try {
+    const { title, body, topic } = _req.body;
+
+    // needs to have a topic. because function used is notification to anyone who subscribed to topics
+    if (topic) {
+      const notificationTitle = title || "BayaPay";
+      const notificationBody =
+        body ||
+        "Your card had a transaction. Please contact customer support if its not you.";
+
+      const response = await sendMessageTopic(
+        topic,
+        notificationTitle,
+        notificationBody
+      );
+      if (response) {
+        return res.send("Message send successfully");
+      }
+    }
+  } catch (error) {
+    console.log(">>> error", error);
   }
 
   return res.send("Message failed to send");
 });
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   return console.log(`Server is listening on ${port}`);
 });
