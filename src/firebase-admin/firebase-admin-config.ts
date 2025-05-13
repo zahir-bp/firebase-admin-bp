@@ -5,6 +5,15 @@ import {
 } from "firebase-admin/lib/messaging/messaging-api";
 import firebaseAdmin from "../../clientInit/firebase-admin-client";
 
+// firebaseAdmin is firebase-admin client init:
+// export default admin.initializeApp({
+//   credential: admin.credential.cert({
+//     projectId: project_id,
+//     privateKey: privateKey.replace(/\\n/g, "\n"),
+//     clientEmail: client_email,
+//   }),
+// });
+
 // /**
 //  * To use this function, will need to save driver's FCM token to database.
 //  * Will need to generate the value during login flow.
@@ -104,7 +113,7 @@ export const sendMessageTopic = async (
 
   const sendTopicPayload: Message = {
     notification: {
-      title: `notification-${title}`,
+      title: title,
       body: notificationMessage,
     },
     topic: topic,
@@ -114,11 +123,12 @@ export const sendMessageTopic = async (
   };
 
   try {
-    firebaseAdmin
+    return await firebaseAdmin
       .messaging()
       .send(sendTopicPayload)
       .then((res) => {
         console.log("res", JSON.stringify(res));
+        return true;
       });
   } catch (error) {
     console.log("ERROR: ", error);
